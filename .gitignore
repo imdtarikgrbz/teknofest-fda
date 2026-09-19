@@ -1,0 +1,39 @@
+# --- catkin / ROS1 derlemesi -------------------------------------------------
+# catkin_make bunları üretir; kaynak değil.
+ros1_ws/build/
+ros1_ws/devel/
+ros1_ws/install/
+ros1_ws/logs/
+.catkin_tools/
+*.catkin_workspace.bak
+
+# --- ROS çalışma zamanı -----------------------------------------------------
+.ros/
+*.bag
+*.bag.active
+log/
+rosout*.log
+
+# --- Gazebo -----------------------------------------------------------------
+.gazebo/
+gazebo*.log
+# GUI'den "Save World As" ile kaydederken bırakılan yedekler
+worlds/*.world~
+*.world.bak
+
+# --- Python -----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# --- Editör / işletim sistemi ------------------------------------------------
+.vscode/*
+!.vscode/settings.json
+.idea/
+*.swp
+*~
+.DS_Store
