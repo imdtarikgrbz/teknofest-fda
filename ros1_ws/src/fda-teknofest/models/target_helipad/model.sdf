@@ -1,0 +1,62 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="target_helipad">
+    <static>true</static>
+    <link name="base_link">
+      
+      <!-- 2x2m Kırmızı Zemin Plakası (Z: 0.02m) -->
+      <visual name="red_base">
+        <pose>0 0 0.01 0 0 0</pose>
+        <geometry>
+          <box><size>2.0 2.0 0.02</size></box>
+        </geometry>
+        <material>
+          <ambient>0.8 0.0 0.0 1</ambient>
+          <diffuse>0.9 0.0 0.0 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0.2 0.0 0.0 1</emissive>
+        </material>
+      </visual>
+
+      <!-- Beyaz H Harfi - Sol Dikey Blok (Z tabanı: 0.02m üzerinde, yükseklik: 0.01m) -->
+      <visual name="h_left_bar">
+        <pose>-0.5 0 0.026 0 0 0</pose>
+        <geometry>
+          <box><size>0.25 1.4 0.012</size></box>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <emissive>0.8 0.8 0.8 1</emissive>
+        </material>
+      </visual>
+
+      <!-- Beyaz H Harfi - Sağ Dikey Blok -->
+      <visual name="h_right_bar">
+        <pose>0.5 0 0.026 0 0 0</pose>
+        <geometry>
+          <box><size>0.25 1.4 0.012</size></box>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <emissive>0.8 0.8 0.8 1</emissive>
+        </material>
+      </visual>
+
+      <!-- Beyaz H Harfi - Orta Yatay Blok -->
+      <visual name="h_cross_bar">
+        <pose>0 0 0.026 0 0 0</pose>
+        <geometry>
+          <box><size>0.8 0.25 0.012</size></box>
+        </geometry>
+        <material>
+          <ambient>1 1 1 1</ambient>
+          <diffuse>1 1 1 1</diffuse>
+          <emissive>0.8 0.8 0.8 1</emissive>
+        </material>
+      </visual>
+
+    </link>
+  </model>
+</sdf>

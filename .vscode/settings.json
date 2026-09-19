@@ -1,0 +1,4 @@
+{
+    "ros.distro": "noetic",
+    "cmake.sourceDirectory": "/home/gurbuz/teknofest-fda/ros1_ws/src"
+}

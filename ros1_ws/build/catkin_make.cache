@@ -1,0 +1,2 @@
+fda-teknofest
+-DCATKIN_DEVEL_PREFIX=/home/gurbuz/teknofest-fda/ros1_ws/devel -DCMAKE_INSTALL_PREFIX=/home/gurbuz/teknofest-fda/ros1_ws/install -G Unix Makefiles

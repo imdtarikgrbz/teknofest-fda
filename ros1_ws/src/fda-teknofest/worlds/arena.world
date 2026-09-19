@@ -1,0 +1,4416 @@
+<sdf version='1.7'>
+  <world name='htab_world'>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose>0 0 10 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <model name='dirt_ground'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>300 300</size>
+            </plane>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>300 300</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://dirt_ground/materials/scripts</uri>
+              <uri>model://dirt_ground/materials/textures</uri>
+              <name>Teknofest/Dirt</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>0 0 0 0 -0 0</pose>
+    </model>
+    <model name='target_helipad'>
+      <static>1</static>
+      <link name='base_link'>
+        <visual name='red_base'>
+          <pose>0 0 0.01 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>2 2 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.8 0 0 1</ambient>
+            <diffuse>0.9 0 0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <emissive>0.2 0 0 1</emissive>
+          </material>
+        </visual>
+        <visual name='h_left_bar'>
+          <pose>-0.5 0 0.026 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.25 1.4 0.012</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <emissive>0.8 0.8 0.8 1</emissive>
+          </material>
+        </visual>
+        <visual name='h_right_bar'>
+          <pose>0.5 0 0.026 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.25 1.4 0.012</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <emissive>0.8 0.8 0.8 1</emissive>
+          </material>
+        </visual>
+        <visual name='h_cross_bar'>
+          <pose>0 0 0.026 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.8 0.25 0.012</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <emissive>0.8 0.8 0.8 1</emissive>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>0 20 0 0 -0 0</pose>
+    </model>
+    <model name='camera'>
+      <static>1</static>
+      <pose>0 0 10 0 1.5708 0</pose>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.1 0.1 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.1 0.1 0.1 1</ambient>
+            <diffuse>0.1 0.1 0.1 1</diffuse>
+          </material>
+        </visual>
+        <!-- ═══════════════════════════════════════════════════════════
+             Raspberry Pi Global Shutter Camera + RPI-6MM LENS
+
+             Sensör: Sony IMX296LQR-C
+               1456 x 1088 px · 3.45 um piksel · 6.27 mm diagonal
+             Lens: 6 mm odak, CS-mount, F1.2
+
+             TÜRETME (piksel boyutu ve odak uzaklığından):
+               sensör genişliği = 1456 x 3.45um = 5.0232 mm
+               sensör yüksekliği = 1088 x 3.45um = 3.7536 mm
+               hfov = 2*atan(5.0232 / (2*6.0)) = 0.792875 rad (45.43°)
+               fx = fy = 6.0 mm / 0.00345 mm = 1739.1304 px  (native)
+
+             Lens datasheet'i 63° diyor ama o değer lensin taşıyabildiği
+             1/2" formata ait. IMX296 daha küçük (6.27 mm diagonal), o
+             yüzden gerçekte elde edilen diagonal FOV 55.18°.
+
+             RENDER ÇÖZÜNÜRLÜĞÜ: sensörün native değeri (1456x1088).
+             Gerçek donanımla BİREBİR aynı olması kasıtlı — sim ile
+             saha testi arasında YOLO'nun gördüğü görüntü, ROI'ler ve
+             piksel eşikleri farklılaşmasın diye. Düşürmek render yükünü
+             azaltır ama sim-to-real farkı açar.
+
+             DİKKAT: bu değerler değişirse scripts/ içindeki CostMap'e
+             verilen fx/fy/cx/cy de AYNI anda güncellenmeli — iki taraf
+             ayrışırsa zemin projeksiyonu sessizce kayar.
+
+             Global shutter: Gazebo kamera sensörü zaten rolling shutter
+             simüle etmiyor, yani sim bu açıdan gerçek donanıma uygun.
+             ═══════════════════════════════════════════════════════════ -->
+        <sensor name='camera' type='camera'>
+          <camera name='camera'>
+            <horizontal_fov>0.792875</horizontal_fov>
+            <image>
+              <width>1456</width>
+              <height>1088</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>100</far>
+            </clip>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.007</stddev>
+            </noise>
+            <!-- Gerçek lensin distorsiyonu ölçülmedi; checkerboard
+                 kalibrasyonundan (camera_calibration) çıkan k1,k2,k3,
+                 p1,p2 değerleri buraya yazılmalı. Şimdilik ideal lens. -->
+            <distortion>
+              <k1>0.0</k1>
+              <k2>0.0</k2>
+              <k3>0.0</k3>
+              <p1>0.0</p1>
+              <p2>0.0</p2>
+              <center>0.5 0.5</center>
+            </distortion>
+            <lens>
+              <type>gnomonical</type>
+              <scale_to_hfov>true</scale_to_hfov>
+              <intrinsics>
+                <fx>1739.1304347826087</fx>
+                <fy>1739.1304347826087</fy>
+                <cx>728.0</cx>
+                <cy>544.0</cy>
+                <s>0.0</s>
+              </intrinsics>
+            </lens>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>30</update_rate>
+          <visualize>1</visualize>
+          <plugin name='camera_controller' filename='libgazebo_ros_camera.so'>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>30</updateRate>
+            <cameraName>camera</cameraName>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <frameName>camera_link</frameName>
+          </plugin>
+        </sensor>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    <physics type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>
+    <wind/>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>0</latitude_deg>
+      <longitude_deg>0</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <state world_name='htab_world'>
+      <sim_time>542 701000000</sim_time>
+      <real_time>87 546341364</real_time>
+      <wall_time>1789219511 835926388</wall_time>
+      <iterations>81600</iterations>
+      <model name='dirt_ground'>
+        <pose>0 0 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier'>
+        <pose>-7.54659 0.190113 0 0 -0 0.464743</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-7.54659 0.190113 0 0 -0 0.464743</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier_clone'>
+        <pose>-7.31869 -8.63765 0 0 0 -0.534924</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-7.31869 -8.63765 0 0 0 -0.534924</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier_clone_0'>
+        <pose>-2.43737 -12.1835 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-2.43737 -12.1835 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier_clone_1'>
+        <pose>-0.10374 -12.1692 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-0.10374 -12.1692 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier_clone_2'>
+        <pose>2.25542 -12.2046 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>2.25542 -12.2046 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier_clone_3'>
+        <pose>7.72554 -7.93012 0 0 -0 0.6372</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>7.72554 -7.93012 0 0 -0 0.6372</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier_clone_4'>
+        <pose>4.70399 9.18295 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>4.70399 9.18295 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier_clone_5'>
+        <pose>6.72236 3.39453 0 0 0 -0.34949</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>6.72236 3.39453 0 0 0 -0.34949</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier_clone_6'>
+        <pose>-3.07315 4.4044 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-3.07315 4.4044 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='jersey_barrier_clone_7'>
+        <pose>-7.36673 8.42136 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-7.36673 8.42136 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile'>
+        <pose>-10.0185 -9.08893 -0.087484 1.57067 0.000787 1.41478</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-10.0185 -9.08893 -0.087484 1.57067 0.000787 1.41478</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone'>
+        <pose>-10.0508 -6.53541 -0.087484 1.5706 0.000771 1.31603</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-10.0508 -6.53541 -0.087484 1.5706 0.000771 1.31603</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_0'>
+        <pose>-9.7306 -4.40877 -0.087484 1.5704 0.00069 1.04313</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-9.7306 -4.40877 -0.087484 1.5704 0.00069 1.04313</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_1'>
+        <pose>-9.82725 -2.90606 -0.087484 1.5706 0.000771 1.31603</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-9.82725 -2.90606 -0.087484 1.5706 0.000771 1.31603</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_10'>
+        <pose>9.22602 -5.03347 -0.087484 1.57125 0.000657 2.1644</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>9.22602 -5.03347 -0.087484 1.57125 0.000657 2.1644</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_11'>
+        <pose>9 -2 -0.087484 1.57048 0.000728 1.14899</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>9 -2 -0.087484 1.57048 0.000728 1.14899</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_12'>
+        <pose>9.51788 0 -0.087484 1.57089 0.00079 1.68763</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>9.51788 0 -0.087484 1.57089 0.00079 1.68763</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_13'>
+        <pose>9.18783 2.5582 -0.087484 1.57112 0.000728 1.98153</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>9.18783 2.5582 -0.087484 1.57112 0.000728 1.98153</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_14'>
+        <pose>9 4 -0.087484 1.57112 0.000727 1.98384</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>9 4 -0.087484 1.57112 0.000727 1.98384</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_15'>
+        <pose>8.82822 6.94533 -0.087484 1.5706 0.000771 1.31603</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>8.82822 6.94533 -0.087484 1.5706 0.000771 1.31603</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_16'>
+        <pose>8.82432 9.17666 -0.087484 1.57036 0.000668 0.990743</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>8.82432 9.17666 -0.087484 1.57036 0.000668 0.990743</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17'>
+        <pose>7.46604 -10.3859 -0.087484 1.57002 -0.00018 -0.234182</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>7.46604 -10.3859 -0.087484 1.57002 -0.00018 -0.234182</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone'>
+        <pose>6.42813 -9.06414 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>6.42813 -9.06414 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_0'>
+        <pose>4.42949 -9.90704 -0.087484 1.57011 0.000395 0.514931</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>4.42949 -9.90704 -0.087484 1.57011 0.000395 0.514931</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_1'>
+        <pose>8.1082 10.7502 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>8.1082 10.7502 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_10'>
+        <pose>-4.51216 10 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-4.51216 10 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_11'>
+        <pose>-6 10 -0.087484 1.57004 -0.000252 -0.328463</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-6 10 -0.087484 1.57004 -0.000252 -0.328463</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_12'>
+        <pose>-8 10 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-8 10 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_13'>
+        <pose>2.80262 -3.37478 -0.087484 1.57041 0.000693 1.05374</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>2.80262 -3.37478 -0.087484 1.57041 0.000693 1.05374</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_14'>
+        <pose>-0.691377 1.45273 -0.087484 1.57052 0.000744 1.20971</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-0.691377 1.45273 -0.087484 1.57052 0.000744 1.20971</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_15'>
+        <pose>1.49302 -2.06456 -0.087484 1.57021 -0.000532 -0.741051</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>1.49302 -2.06456 -0.087484 1.57021 -0.000532 -0.741051</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_16'>
+        <pose>0 -1 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>0 -1 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_17'>
+        <pose>-1.52319 -0.109519 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-1.52319 -0.109519 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_18'>
+        <pose>-1.07992 3.1949 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-1.07992 3.1949 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_19'>
+        <pose>2 0 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>2 0 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_2'>
+        <pose>-4.12316 -10.2487 -0.087484 1.57023 0.000556 0.769393</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-4.12316 -10.2487 -0.087484 1.57023 0.000556 0.769393</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_20'>
+        <pose>4 1 -0.087484 1.57 2.9e-05 0.030388</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>4 1 -0.087484 1.57 2.9e-05 0.030388</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_21'>
+        <pose>-4.79426 -2.92182 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-4.79426 -2.92182 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_22'>
+        <pose>-4.68935 -4.61798 -0.087484 1.57025 -0.000575 -0.815845</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-4.68935 -4.61798 -0.087484 1.57025 -0.000575 -0.815845</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_23'>
+        <pose>-2.9956 6.06569 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-2.9956 6.06569 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_24'>
+        <pose>-5.30129 4.66907 -0.087484 1.57052 0.000746 1.21497</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-5.30129 4.66907 -0.087484 1.57052 0.000746 1.21497</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_24_clone'>
+        <pose>-5.58901 2.18422 -0.087484 1.57052 0.000746 1.21497</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-5.58901 2.18422 -0.087484 1.57052 0.000746 1.21497</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_24_clone_0'>
+        <pose>-6.39817 0.408172 -0.087484 1.57052 0.000746 1.21497</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-6.39817 0.408172 -0.087484 1.57052 0.000746 1.21497</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_24_clone_1'>
+        <pose>4.42899 -5.07856 -0.087484 1.57147 0.000425 2.57717</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>4.42899 -5.07856 -0.087484 1.57147 0.000425 2.57717</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_24_clone_2'>
+        <pose>8.48222 -9.11081 -0.087484 1.57052 0.000746 1.21497</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>8.48222 -9.11081 -0.087484 1.57052 0.000746 1.21497</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_24_clone_3'>
+        <pose>7.38519 8.62507 -0.087484 1.57052 0.000746 1.21497</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>7.38519 8.62507 -0.087484 1.57052 0.000746 1.21497</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_24_clone_4'>
+        <pose>-9.89278 0.757689 -0.087484 1.57052 0.000746 1.21497</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-9.89278 0.757689 -0.087484 1.57052 0.000746 1.21497</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_24_clone_5'>
+        <pose>-1.6043 4.57827 -0.087484 1.57007 0.000313 0.40345</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-1.6043 4.57827 -0.087484 1.57007 0.000313 0.40345</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_3'>
+        <pose>-8.42688 -10 -0.087484 1.57001 -7.1e-05 -0.095638</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-8.42688 -10 -0.087484 1.57001 -7.1e-05 -0.095638</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_4'>
+        <pose>-6 -10 -0.087484 1.57025 -0.000573 -0.81256</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-6 -10 -0.087484 1.57025 -0.000573 -0.81256</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_5'>
+        <pose>6.20506 10.3944 -0.087484 1.57024 0.000571 0.796389</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>6.20506 10.3944 -0.087484 1.57024 0.000571 0.796389</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_6'>
+        <pose>4 11 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>4 11 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_7'>
+        <pose>2.04742 10.0632 -0.087484 1.57009 0.000355 0.457233</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>2.04742 10.0632 -0.087484 1.57009 0.000355 0.457233</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_8'>
+        <pose>0 11 -0.087484 1.57003 0.000208 0.258977</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>0 11 -0.087484 1.57003 0.000208 0.258977</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_17_clone_9'>
+        <pose>-2.58327 10 -0.087484 1.57014 0.000445 0.589527</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-2.58327 10 -0.087484 1.57014 0.000445 0.589527</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_2'>
+        <pose>-10 -1 -0.087484 1.57024 0.000567 0.787376</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-10 -1 -0.087484 1.57024 0.000567 0.787376</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_3'>
+        <pose>-9.39482 1.56592 -0.087484 1.57082 -0.021116 1.59603</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-9.39482 1.56592 -0.087484 1.57082 -0.021116 1.59603</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_4'>
+        <pose>-9.6973 3.94843 -0.087484 1.5706 0.000771 1.31603</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-9.6973 3.94843 -0.087484 1.5706 0.000771 1.31603</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_5'>
+        <pose>-10 6 -0.087484 1.57029 0.000617 0.881511</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-10 6 -0.087484 1.57029 0.000617 0.881511</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_6'>
+        <pose>-10 8.54153 -0.087484 1.5706 0.000771 1.31603</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-10 8.54153 -0.087484 1.5706 0.000771 1.31603</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_7'>
+        <pose>-9.57935 10 -0.087484 1.5706 0.000771 1.31603</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>-9.57935 10 -0.087484 1.5706 0.000771 1.31603</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_8'>
+        <pose>9.4977 -8.93696 -0.087484 1.57097 0.000777 1.78244</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>9.4977 -8.93696 -0.087484 1.57097 0.000777 1.78244</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='rubble_pile_clone_9'>
+        <pose>9.58969 -7 -0.087484 1.57129 0.000624 2.23377</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>9.58969 -7 -0.087484 1.57129 0.000624 2.23377</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='target_helipad'>
+        <pose>3.55186 5.61611 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose>3.55186 5.61611 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='sun'>
+        <pose>0 0 10 0 -0 0</pose>
+      </light>
+    </state>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>1.03609 -2.15661 35.174 -2.2e-05 1.5698 1.5769</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+    <model name='rubble_pile'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-13.4841 -1.96724 0 0 -0 0</pose>
+    </model>
+    <model name='rubble_pile_clone'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-10.0508 -6.53541 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_0'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-9.7306 -4.40877 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_1'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-9.82725 -2.90606 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_2'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-10 -1 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_3'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-9.39482 1.56592 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_4'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-9.6973 3.94843 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_5'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-10 6 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_6'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-10 8.54153 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_7'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-9.57935 10 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_8'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>9.4977 -8.93696 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_9'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>9.58969 -7 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_10'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>9.22602 -5.03347 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_11'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>9 -2 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_12'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>9.51788 0 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_13'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>9.18783 2.5582 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_14'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>9 4 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_15'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>8.82822 6.94533 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_16'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>8.82432 9.17666 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_17'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>7.46604 -10.3859 -0.087484 1.5706 0.000771 1.31603</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>6.42813 -9.06414 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_0'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>4.42949 -9.90704 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_3'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-8.42688 -10 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_4'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-6 -10 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_2'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-4.12316 -10.2487 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_1'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>8.1082 10.7502 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_5'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>6.20506 10.3944 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_6'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>4 11 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_7'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>2.04742 10.0632 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_8'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>0 11 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_9'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-2.58327 10 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_10'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-4.51216 10 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_11'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-6 10 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_12'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-8 10 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_13'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>2.80262 -3.37478 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_15'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>1.49302 -2.06456 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_16'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>0 -1 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_17'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-1.52319 -0.109519 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_21'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-4.79426 -2.92182 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_22'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-4.68935 -4.61798 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_14'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-0.691377 1.45273 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_18'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-1.07992 3.1949 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_19'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>2 0 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_20'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>4 1 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_23'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-2.9956 6.06569 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_24'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-5.30129 4.66907 -0.087484 1.57003 0.000208 0.258977</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_24_clone'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-5.58901 2.18422 -0.087484 1.57052 0.000746 1.21497</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_24_clone_0'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-6.39817 0.408172 -0.087484 1.57052 0.000746 1.21497</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_24_clone_1'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>4.42899 -5.07856 -0.087484 1.57052 0.000746 1.21497</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_24_clone_2'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>8.48222 -9.11081 -0.087484 1.57052 0.000746 1.21497</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_24_clone_3'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>7.38519 8.62507 -0.087484 1.57052 0.000746 1.21497</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_24_clone_4'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-9.89278 0.757689 -0.087484 1.57052 0.000746 1.21497</pose>
+    </model>
+    <model name='rubble_pile_clone_17_clone_24_clone_5'>
+      <static>1</static>
+      <link name='base_link'>
+        <collision name='collision'>
+          <pose>0 0 0.5 0 1.57 0</pose>
+          <geometry>
+            <box>
+              <size>4 3 1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.5 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://rubble_pile/meshes/debris.obj</uri>
+              <scale>0.1 0.1 0.1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-1.6043 4.57827 -0.087484 1.57052 0.000746 1.21497</pose>
+    </model>
+    <model name='jersey_barrier'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-7.54659 0.190113 0 0 -0 0</pose>
+    </model>
+    <model name='jersey_barrier_clone'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-7.31869 -8.63765 0 0 -0 0</pose>
+    </model>
+    <model name='jersey_barrier_clone_0'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-2.43737 -12.1835 0 0 -0 0</pose>
+    </model>
+    <model name='jersey_barrier_clone_1'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-0.10374 -12.1692 0 0 -0 0</pose>
+    </model>
+    <model name='jersey_barrier_clone_2'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>2.25542 -12.2046 0 0 -0 0</pose>
+    </model>
+    <model name='jersey_barrier_clone_3'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>7.72554 -7.93012 0 0 -0 0</pose>
+    </model>
+    <model name='jersey_barrier_clone_4'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>4.70399 9.18295 0 0 -0 0</pose>
+    </model>
+    <model name='jersey_barrier_clone_5'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>6.72236 3.39453 0 0 -0 0</pose>
+    </model>
+    <model name='jersey_barrier_clone_6'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-3.07315 4.4044 0 0 -0 0</pose>
+    </model>
+    <model name='jersey_barrier_clone_7'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://jersey_barrier/meshes/jersey_barrier.dae</uri>
+              <scale>0.4 0.4 0.4</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='upright'>
+          <pose>0 0 0.5715 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.3063 1.143</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base'>
+          <pose>0 0 0.032258 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.8107 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base2'>
+          <pose>0 0 0.1 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.65 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='base3'>
+          <pose>0 0 0.2 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='left-angle'>
+          <pose>0 -0.224 0.2401 0.9 -0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='right-angle'>
+          <pose>0 0.224 0.2401 -0.9 0 0</pose>
+          <geometry>
+            <box>
+              <size>4.06542 0.5 0.064516</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-7.36673 8.42136 0 0 -0 0</pose>
+    </model>
+  </world>
+</sdf>

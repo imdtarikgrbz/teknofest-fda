@@ -1,0 +1,84 @@
+<?xml version="1.0" ?>
+<!-- ═══════════════════════════════════════════════════════════════
+     HTAB ayırıcı duvarı — şartname 2.1 "Güzergahlar"
+
+     "HTAB içerisinde İKA-KB ile HB arasında, moloz yığınları arasında
+      oluşturulmuş üç (3) adet farklı yol (güzergah) bulunmaktadır.
+      Yarışma günlerinde bu üç yoldan yalnızca bir (1) tanesi açık
+      bırakılacak, diğer iki yol fiziki engellerle kapatılacaktır."
+
+     Dünyadaki moloz alanı Gazebo'da elle serpiştirilmişti; tanımlı üç
+     yol YOKTU. Bu duvar HTAB'ı y=5.0 m hattında ikiye böler ve yalnız
+     üç kapı bırakır:  A x=-15.5 · B x=9.65 · C x=21.45
+
+     Hat y=5.0'te: molozun bıraktığı üç doğal boşluk tam burada; duvar
+     yalnız aradaki dolu olmayan yerlere kondu (mevcut moloz zaten
+     kapatıyorsa parça konmadı, modeller üst üste binmesin).
+
+     Kapı genişliği 3.0 m; kapatma bariyeri (models/jersey_barrier,
+     4.065 m) bir kapıyı tam örter.
+
+     Doğrulandı (A*, İKA yarı genişliği + 0.8 m pay; engel pozları
+     dünya dosyasının <state> bloğundan, yani Gazebo'nun gerçekten
+     uyguladığı pozlardan alındı):
+       her kapı açıkken (0,-20) -> (0,20) geçiş VAR,
+       kapı kapalıyken o yoldan geçiş YOK,
+       üç kapı da kapalıyken hiçbir geçiş YOK.
+     ═══════════════════════════════════════════════════════════════ -->
+<sdf version="1.6">
+  <model name="htab_ayirici">
+    <static>true</static>
+    <link name="parca_0">
+      <pose>-21.0 5.0 0.500 0 0 0</pose>
+      <collision name="collision">
+        <geometry><box><size>8.0 0.5 1.0</size></box></geometry>
+      </collision>
+      <visual name="visual">
+        <geometry><box><size>8.0 0.5 1.0</size></box></geometry>
+        <material>
+          <ambient>0.55 0.55 0.52 1</ambient>
+          <diffuse>0.62 0.62 0.58 1</diffuse>
+        </material>
+      </visual>
+    </link>
+    <link name="parca_1">
+      <pose>-3.0 5.0 0.500 0 0 0</pose>
+      <collision name="collision">
+        <geometry><box><size>22.0 0.5 1.0</size></box></geometry>
+      </collision>
+      <visual name="visual">
+        <geometry><box><size>22.0 0.5 1.0</size></box></geometry>
+        <material>
+          <ambient>0.55 0.55 0.52 1</ambient>
+          <diffuse>0.62 0.62 0.58 1</diffuse>
+        </material>
+      </visual>
+    </link>
+    <link name="parca_2">
+      <pose>15.5 5.0 0.500 0 0 0</pose>
+      <collision name="collision">
+        <geometry><box><size>9.0 0.5 1.0</size></box></geometry>
+      </collision>
+      <visual name="visual">
+        <geometry><box><size>9.0 0.5 1.0</size></box></geometry>
+        <material>
+          <ambient>0.55 0.55 0.52 1</ambient>
+          <diffuse>0.62 0.62 0.58 1</diffuse>
+        </material>
+      </visual>
+    </link>
+    <link name="parca_3">
+      <pose>24.0 5.0 0.500 0 0 0</pose>
+      <collision name="collision">
+        <geometry><box><size>2.0 0.5 1.0</size></box></geometry>
+      </collision>
+      <visual name="visual">
+        <geometry><box><size>2.0 0.5 1.0</size></box></geometry>
+        <material>
+          <ambient>0.55 0.55 0.52 1</ambient>
+          <diffuse>0.62 0.62 0.58 1</diffuse>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

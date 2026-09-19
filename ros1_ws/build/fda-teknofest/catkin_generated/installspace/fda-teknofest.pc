@@ -1,0 +1,8 @@
+prefix=/home/gurbuz/teknofest-fda/ros1_ws/install
+
+Name: fda-teknofest
+Description: Description of fda-teknofest
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

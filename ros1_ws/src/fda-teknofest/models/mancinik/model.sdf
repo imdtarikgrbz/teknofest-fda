@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!-- ═══════════════════════════════════════════════════════════════
+     Mancınık — İHA fırlatma rampası
+
+     Kaynak: Z-Sistem pnömatik COTS (BRIEF "Mancınık" bölümü)
+       14 kJ · azami 30 kg İHA · 80 km/h (22.22 m/s) · 8 ATM · 10° açı
+
+     Model origin YERDE, +X fırlatma doğrultusu.
+     Ray: 4.0 m, 10° yukarı eğimli, ray merkezi z = 0.60 m.
+
+     GEOMETRİ TÜRETMESİ (cos10° = 0.98481, sin10° = 0.17365):
+       ray yerel +X (dünyada) = ( 0.98481, 0,  0.17365)
+       ray yerel +Z (dünyada) = (-0.17365, 0,  0.98481)
+       ray arka ucu  (yerel x = -2.0) → z = 0.60 - 0.347 = 0.253
+       ray ön ucu    (yerel x = +2.0) → z = 0.60 + 0.347 = 0.947
+
+     İHA'nın ray üzerindeki DURUŞ NOKTASI (yerel x = +1.5, yani ön
+     uçtan 0.5 m geride; gövde yarı yüksekliği 0.10 + ray yarı
+     kalınlığı 0.04 = 0.14 ray-yereli yukarıda):
+       x = 1.5·0.98481 + 0.14·(-0.17365) = 1.4529
+       z = 0.60 + 1.5·0.17365 + 0.14·0.98481 = 0.9984
+     Bu iki sayı launch/sim.launch içindeki İHA spawn pozunda geçiyor.
+     Rampa ölçüsü değişirse ORASI da güncellenmeli.
+
+     Statik ve tek link: hareketli parça YOK. Mancınığın enerji
+     depolama/bırakma davranışı fiziksel olarak modellenmiyor —
+     net sonucu (ray çıkış hızı) scripts/mancinik.py uyguluyor.
+     Gerekçe o dosyanın başında.
+     ═══════════════════════════════════════════════════════════════ -->
+<sdf version="1.6">
+  <model name="mancinik">
+    <static>true</static>
+    <link name="govde">
+
+      <!-- Kaide — zemine oturan taban plakası -->
+      <collision name="kaide_collision">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry><box><size>4.4 0.60 0.10</size></box></geometry>
+      </collision>
+      <visual name="kaide">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry><box><size>4.4 0.60 0.10</size></box></geometry>
+        <material><script><name>Gazebo/Grey</name></script></material>
+      </visual>
+
+      <!-- Ray — İHA bunun üzerinde duruyor. Sürtünme İHA'yı 10°
+           eğimde tutmalı: gereken mu > tan(10°) = 0.176. -->
+      <collision name="ray_collision">
+        <pose>0 0 0.60 0 -0.174533 0</pose>
+        <geometry><box><size>4.0 0.30 0.08</size></box></geometry>
+        <surface>
+          <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+        </surface>
+      </collision>
+      <visual name="ray">
+        <pose>0 0 0.60 0 -0.174533 0</pose>
+        <geometry><box><size>4.0 0.30 0.08</size></box></geometry>
+        <material><script><name>Gazebo/DarkGrey</name></script></material>
+      </visual>
+
+      <!-- Arka ayak: kaide üstü 0.10 → ray arka alt yüzü 0.213 -->
+      <collision name="arka_ayak_collision">
+        <pose>-1.97 0 0.157 0 0 0</pose>
+        <geometry><box><size>0.12 0.30 0.113</size></box></geometry>
+      </collision>
+      <visual name="arka_ayak">
+        <pose>-1.97 0 0.157 0 0 0</pose>
+        <geometry><box><size>0.12 0.30 0.113</size></box></geometry>
+        <material><script><name>Gazebo/Grey</name></script></material>
+      </visual>
+
+      <!-- Ön ayak: kaide üstü 0.10 → ray ön alt yüzü 0.908 -->
+      <collision name="on_ayak_collision">
+        <pose>1.97 0 0.504 0 0 0</pose>
+        <geometry><box><size>0.12 0.30 0.808</size></box></geometry>
+      </collision>
+      <visual name="on_ayak">
+        <pose>1.97 0 0.504 0 0 0</pose>
+        <geometry><box><size>0.12 0.30 0.808</size></box></geometry>
+        <material><script><name>Gazebo/Grey</name></script></material>
+      </visual>
+
+      <!-- Çapraz destek — yalnız görsel, temas yükü taşımıyor -->
+      <visual name="capraz">
+        <pose>0.6 0 0.33 0 -0.55 0</pose>
+        <geometry><box><size>1.9 0.10 0.06</size></box></geometry>
+        <material><script><name>Gazebo/Grey</name></script></material>
+      </visual>
+
+      <!-- Basınç tankı — pnömatik sistemin görsel karşılığı -->
+      <visual name="tank">
+        <pose>-1.6 0 0.28 0 1.5708 0</pose>
+        <geometry><cylinder><radius>0.16</radius><length>0.9</length></cylinder></geometry>
+        <material><script><name>Gazebo/Yellow</name></script></material>
+      </visual>
+
+    </link>
+  </model>
+</sdf>
